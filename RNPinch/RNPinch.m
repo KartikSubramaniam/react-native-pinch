@@ -54,30 +54,33 @@
 
 - (void)URLSession:(NSURLSession *)session didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential * _Nullable credential))completionHandler {
 
-    if ([[[challenge protectionSpace] authenticationMethod] isEqualToString:NSURLAuthenticationMethodServerTrust]) {
-        NSString *domain = challenge.protectionSpace.host;
-        SecTrustRef serverTrust = [[challenge protectionSpace] serverTrust];
+    
+ completionHandler(NSURLSessionAuthChallengeUseCredential, [NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust]);
 
-        NSArray *policies = @[(__bridge_transfer id)SecPolicyCreateSSL(true, (__bridge CFStringRef)domain)];
+//     if ([[[challenge protectionSpace] authenticationMethod] isEqualToString:NSURLAuthenticationMethodServerTrust]) {
+//         NSString *domain = challenge.protectionSpace.host;
+//         SecTrustRef serverTrust = [[challenge protectionSpace] serverTrust];
 
-        SecTrustSetPolicies(serverTrust, (__bridge CFArrayRef)policies);
-        // setup
-        SecTrustSetAnchorCertificates(serverTrust, (__bridge CFArrayRef)self.pinnedCertificateData);
-        SecTrustResultType result;
+//         NSArray *policies = @[(__bridge_transfer id)SecPolicyCreateSSL(true, (__bridge CFStringRef)domain)];
 
-        // evaluate
-        OSStatus errorCode = SecTrustEvaluate(serverTrust, &result);
+//         SecTrustSetPolicies(serverTrust, (__bridge CFArrayRef)policies);
+//         // setup
+//         SecTrustSetAnchorCertificates(serverTrust, (__bridge CFArrayRef)self.pinnedCertificateData);
+//         SecTrustResultType result;
 
-        BOOL evaluatesAsTrusted = (result == kSecTrustResultUnspecified || result == kSecTrustResultProceed);
-        if (errorCode == errSecSuccess && evaluatesAsTrusted) {
-            NSURLCredential *credential = [NSURLCredential credentialForTrust:serverTrust];
-            completionHandler(NSURLSessionAuthChallengeUseCredential, credential);
-        } else {
-            completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, NULL);
-        }
-    } else {
-        completionHandler(NSURLSessionAuthChallengePerformDefaultHandling, NULL);
-    }
+//         // evaluate
+//         OSStatus errorCode = SecTrustEvaluate(serverTrust, &result);
+
+//         BOOL evaluatesAsTrusted = (result == kSecTrustResultUnspecified || result == kSecTrustResultProceed);
+//         if (errorCode == errSecSuccess && evaluatesAsTrusted) {
+//             NSURLCredential *credential = [NSURLCredential credentialForTrust:serverTrust];
+//             completionHandler(NSURLSessionAuthChallengeUseCredential, credential);
+//         } else {
+//             completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, NULL);
+//         }
+//     } else {
+//         completionHandler(NSURLSessionAuthChallengePerformDefaultHandling, NULL);
+//     }
 }
 
 @end
